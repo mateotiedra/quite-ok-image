@@ -27,16 +27,6 @@ public final class Main {
    */
   public static void main(String[] args) {
     /*
-     * We've listed all the test methods here.
-     * Once you've implemented a new functionality, you can uncomment
-     * the corresponding test and run it.
-     * All the test starts with the 'assert' keyword. This means that if
-     * a test passes, your program will continue the execution of the code.
-     * Otherwise, if the test fails, your program will stop and a message will
-     * appear in your terminal :
-     * """
-     * Exception in thread "main" java.lang.AssertionError
-     * """
      * You can check which test fails and why by inspecting the StackTrace.
      * You can always change the code of this method to change the behavior of
      * your program

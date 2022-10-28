@@ -31,13 +31,18 @@ public final class ArrayUtils {
    * @throws AssertionError if one of the parameters is null
    */
   public static boolean equals(byte[] a1, byte[] a2) {
-    System.out.println("fdsfd");
-    boolean sameArray = true;
-    for (int i = 0; i < a2.length; i++) {
-      System.out.println("fdsfd");
-    }
+    if (a1 == null || a2 == null)
+      if (a1 == a2)
+        return true;
+      else
+        assert false;
 
-    return Helper.fail("Not Implemented");
+    // If there is any byte that is not the same return false
+    for (int i = 0; i < a1.length; ++i)
+      if (a1[i] != a2[i])
+        return false;
+
+    return true;
   }
 
   /**
@@ -50,7 +55,18 @@ public final class ArrayUtils {
    * @throws AssertionError if one of the parameters is null
    */
   public static boolean equals(byte[][] a1, byte[][] a2) {
-    return Helper.fail("Not Implemented");
+    if (a1 == null || a2 == null)
+      if (a1 == a2)
+        return true;
+      else
+        assert false;
+
+    // If there is any array that is not the same return false
+    for (int i = 0; i < a1.length; ++i)
+      if (!equals(a1[i], a2[i]))
+        return false;
+
+    return true;
   }
 
   // ==================================================================================

@@ -221,7 +221,33 @@ public final class ArrayUtils {
    *                        the input's length
    */
   public static byte[][] partition(byte[] input, int... sizes) {
-    return Helper.fail("Not Implemented");
+    assert input != null;
+    assert sizes != null;
+    assert input.length == sumOf(sizes);
+
+    byte[][] partitionedBytesTabs = new byte[sizes.length][];
+    int start = 0;
+    for (int i = 0; i < sizes.length; i++) {
+      partitionedBytesTabs[i] = extract(input, start, sizes[i]);
+      start += sizes[i];
+    }
+    return partitionedBytesTabs;
+  }
+
+  /**
+   * Return the sum of every elements of the table
+   * 
+   * @param input (int[]) - The table to sum
+   * @return (int) - Sum
+   * 
+   * @throws AssertionError if the table is null of if the
+   */
+  public static int sumOf(int[] input) {
+    int sum = 0;
+    for (int i : input) {
+      sum += i;
+    }
+    return sum;
   }
 
   // ==================================================================================

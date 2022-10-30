@@ -1,5 +1,7 @@
 package cs107;
 
+import java.util.ArrayList;
+
 /**
  * Utility class to manipulate arrays.
  * 
@@ -124,7 +126,6 @@ public final class ArrayUtils {
 
     for (int i = 0; i < bytes.length; i++) {
       bytes[3 - i] = (byte) (value >> (8 * i));
-      System.out.println(bytes[3 - i]);
     }
 
     return bytes;
@@ -143,7 +144,13 @@ public final class ArrayUtils {
    * @throws AssertionError if the input is null
    */
   public static byte[] concat(byte... bytes) {
-    return Helper.fail("Not Implemented");
+    assert bytes != null && bytes.length != 0;
+
+    byte[] bytesTab = new byte[bytes.length];
+    for (int i = 0; i < bytes.length; i++) {
+      bytesTab[i] = bytes[i];
+    }
+    return bytesTab;
   }
 
   /**
@@ -155,7 +162,20 @@ public final class ArrayUtils {
    *                        or one of the inner arrays of input is null.
    */
   public static byte[] concat(byte[]... tabs) {
-    return Helper.fail("Not Implemented");
+    assert tabs != null;
+    ArrayList<Byte> bytesList = new ArrayList<Byte>();
+    for (int i = 0; i < tabs.length; i++) {
+      assert tabs[i] != null;
+      for (int j = 0; j < tabs[i].length; j++) {
+        bytesList.add(tabs[i][j]);
+      }
+    }
+    byte[] bytesArray = new byte[bytesList.size()];
+    for (int i = 0; i < bytesArray.length; i++) {
+      bytesArray[i] = bytesList.get(i);
+    }
+
+    return bytesArray;
   }
 
   // ==================================================================================
@@ -175,7 +195,17 @@ public final class ArrayUtils {
    *                        length
    */
   public static byte[] extract(byte[] input, int start, int length) {
-    return Helper.fail("Not Implemented");
+    assert input != null;
+    assert start >= 0 && start < input.length;
+    assert length >= 0;
+    assert start + length <= input.length;
+
+    byte[] subTab = new byte[length];
+
+    for (int i = 0; i < length; i++) {
+      subTab[i] = input[start + i];
+    }
+    return subTab;
   }
 
   /**

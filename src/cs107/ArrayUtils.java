@@ -81,7 +81,7 @@ public final class ArrayUtils {
    * @return (byte[]) - array with one element (value)
    */
   public static byte[] wrap(byte value) {
-    return Helper.fail("Not Implemented");
+    return new byte[] { value };
   }
 
   // ==================================================================================
@@ -100,7 +100,15 @@ public final class ArrayUtils {
    *                        different from 4
    */
   public static int toInt(byte[] bytes) {
-    return Helper.fail("Not Implemented");
+    assert bytes != null && bytes.length == 4;
+
+    int value = 0;
+    for (int i = 0; i < bytes.length; i++) {
+      value = value << 8;
+      value = value | bytes[i];
+    }
+
+    return value;
   }
 
   /**
@@ -112,7 +120,14 @@ public final class ArrayUtils {
    * @return (byte[]) - Big Endian representation of the integer
    */
   public static byte[] fromInt(int value) {
-    return Helper.fail("Not Implemented");
+    byte[] bytes = new byte[4];
+
+    for (int i = 0; i < bytes.length; i++) {
+      bytes[3 - i] = (byte) (value >> (8 * i));
+      System.out.println(bytes[3 - i]);
+    }
+
+    return bytes;
   }
 
   // ==================================================================================

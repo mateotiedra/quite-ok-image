@@ -1,7 +1,6 @@
 package cs107;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Utility class to manipulate arrays.

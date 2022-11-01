@@ -295,8 +295,6 @@ public final class ArrayUtils {
         // Put the alpha back on the first place
         pixelBytesFormatted = concat(wrap(pixelBytesFormatted[3]), extract(pixelBytesFormatted, 0, 3));
         pixelsTabImageFormatted[i][j] = toInt(pixelBytesFormatted);
-        System.out.println(Arrays.toString(pixelBytesFormatted));
-
       }
 
     }

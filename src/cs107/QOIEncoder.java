@@ -53,11 +53,6 @@ public final class QOIEncoder {
 
     }
 
-    // ==================================================================================
-    // ============================ ATOMIC ENCODING METHODS
-    // =============================
-    // ==================================================================================
-
     /**
      * Encode the given pixel using the QOI_OP_RGB schema
      * 
@@ -66,7 +61,10 @@ public final class QOIEncoder {
      * @return (byte[]) - Encoding of the pixel using the QOI_OP_RGB schema
      */
     public static byte[] qoiOpRGB(byte[] pixel) {
-        return Helper.fail("Not Implemented");
+        assert pixel != null;
+        assert pixel.length == 4;
+
+        return ArrayUtils.concat(ArrayUtils.wrap(QOISpecification.QOI_OP_RGB_TAG), ArrayUtils.extract(pixel, 0, 3));
     }
 
     /**
@@ -77,7 +75,51 @@ public final class QOIEncoder {
      * @return (byte[]) Encoding of the pixel using the QOI_OP_RGBA schema
      */
     public static byte[] qoiOpRGBA(byte[] pixel) {
-        return Helper.fail("Not Implemented");
+        assert pixel != null;
+        assert pixel.length == 4;
+
+        return ArrayUtils.concat(ArrayUtils.wrap(QOISpecification.QOI_OP_RGBA_TAG), pixel);
+    }
+
+    /**
+     * Check if the value given use only n bits (on the right of the left)
+     * 
+     * @param value   (byte) - The value to check
+     * @param nbrBits (int) - The nbr the bits allowed from the left (negative for
+     *                from the right)
+     * @throws AssertionError if n is more than 8
+     * @return (boolean) If the value given use at most n bits (on the right of the
+     *         left)
+     */
+    public static boolean useNBites(byte value, int nbrBits) {
+        assert nbrBits >= -8 && nbrBits <= 8 && nbrBits != 0;
+
+        byte sign = (byte) (nbrBits / Math.abs(nbrBits));
+        int nbrBitsToRemove = 8 - Math.abs(nbrBits);
+
+        int intValue = sign > 0 ? (value >>> nbrBitsToRemove) << nbrBitsToRemove
+                : ((value << nbrBitsToRemove) & 0b11111111) >>> nbrBitsToRemove;
+
+        return intValue == value;
+    }
+
+    /**
+     * Add to the given valur of 6 bits the prefix tag of 2 bits
+     * 
+     * @param tag   (byte[]) - The tag to add
+     * @param pixel (byte[]) - The byte to encode
+     * @throws AssertionError if the byte's value use more than 6 bits
+     *                        if the tag's value use more than 2 bits
+     * @return (byte[]) Encoding of the value by adding the 2 bits tag
+     */
+    public static byte addTagToValue(byte tag, byte value) {
+        Integer intTag = 0;
+        assert useNBites(tag, 2);
+
+        // set the two first bits of the value to 0
+        assert useNBites(value, -6);
+
+        return (byte) (intTag | value);
     }
 
     /**
@@ -89,7 +131,11 @@ public final class QOIEncoder {
      * @return (byte[]) - Encoding of the index using the QOI_OP_INDEX schema
      */
     public static byte[] qoiOpIndex(byte index) {
-        return Helper.fail("Not Implemented");
+        /*
+         * In our the function addTagValue is not needed but I put there so the program
+         * would handle the change of QOI_OP_INDEX_TAG
+         */
+        return ArrayUtils.wrap(addTagToValue(QOISpecification.QOI_OP_INDEX_TAG, index));
     }
 
     /**
@@ -102,7 +148,15 @@ public final class QOIEncoder {
      * @return (byte[]) - Encoding of the given difference
      */
     public static byte[] qoiOpDiff(byte[] diff) {
-        return Helper.fail("Not Implemented");
+        int diffEncoded = 0b00000000;
+        for (byte colorDiff : diff) {
+            colorDiff += 2;
+
+            assert useNBites(colorDiff, -2);
+            diffEncoded = (diffEncoded << 2) & colorDiff;
+        }
+
+        return ArrayUtils.wrap(addTagToValue(QOISpecification.QOI_OP_DIFF_TAG, (byte) (diffEncoded)));
     }
 
     /**

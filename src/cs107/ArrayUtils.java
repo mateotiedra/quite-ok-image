@@ -1,6 +1,7 @@
 package cs107;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Utility class to manipulate arrays.
@@ -17,11 +18,6 @@ public final class ArrayUtils {
    */
   private ArrayUtils() {
   }
-
-  // ==================================================================================
-  // =========================== ARRAY EQUALITY METHODS
-  // ===============================
-  // ==================================================================================
 
   /**
    * Check if the content of both arrays is the same
@@ -71,11 +67,6 @@ public final class ArrayUtils {
     return true;
   }
 
-  // ==================================================================================
-  // ============================ ARRAY WRAPPING METHODS
-  // ==============================
-  // ==================================================================================
-
   /**
    * Wrap the given value in an array
    * 
@@ -85,11 +76,6 @@ public final class ArrayUtils {
   public static byte[] wrap(byte value) {
     return new byte[] { value };
   }
-
-  // ==================================================================================
-  // ========================== INTEGER MANIPULATION METHODS
-  // ==========================
-  // ==================================================================================
 
   /**
    * Create an Integer using the given array. The input needs to be considered
@@ -130,11 +116,6 @@ public final class ArrayUtils {
 
     return bytes;
   }
-
-  // ==================================================================================
-  // ========================== ARRAY CONCATENATION METHODS
-  // ===========================
-  // ==================================================================================
 
   /**
    * Concatenate a given sequence of bytes and stores them in an array
@@ -177,11 +158,6 @@ public final class ArrayUtils {
 
     return bytesArray;
   }
-
-  // ==================================================================================
-  // =========================== ARRAY EXTRACTION METHODS
-  // =============================
-  // ==================================================================================
 
   /**
    * Extract an array from another array
@@ -227,6 +203,7 @@ public final class ArrayUtils {
 
     byte[][] partitionedBytesTabs = new byte[sizes.length][];
     int start = 0;
+
     for (int i = 0; i < sizes.length; i++) {
       partitionedBytesTabs[i] = extract(input, start, sizes[i]);
       start += sizes[i];
@@ -250,11 +227,6 @@ public final class ArrayUtils {
     return sum;
   }
 
-  // ==================================================================================
-  // ============================== ARRAY FORMATTING METHODS
-  // ==========================
-  // ==================================================================================
-
   /**
    * Format a 2-dim integer array
    * where each dimension is a direction in the image to
@@ -268,7 +240,29 @@ public final class ArrayUtils {
    *                        or one of the inner arrays of input is null
    */
   public static byte[][] imageToChannels(int[][] input) {
-    return Helper.fail("Not Implemented");
+    assert input != null;
+
+    ArrayList<byte[]> pixelsList = new ArrayList<byte[]>();
+
+    for (int[] line : input) {
+      assert line != null;
+
+      for (int pixelIntFormatted : line) {
+        byte[] pixelBytesFormatted = fromInt(pixelIntFormatted);
+        // Put the alpha channel at the end to match the required format
+        pixelBytesFormatted = concat(extract(pixelBytesFormatted, 1, 3), wrap(pixelBytesFormatted[0]));
+
+        pixelsList.add(pixelBytesFormatted);
+      }
+    }
+
+    byte[][] pixelsTab = new byte[pixelsList.size()][4];
+
+    for (int i = 0; i < pixelsTab.length; i++) {
+      pixelsTab[i] = pixelsList.get(i);
+    }
+
+    return pixelsTab;
   }
 
   /**
@@ -287,7 +281,27 @@ public final class ArrayUtils {
    *                        or width is invalid
    */
   public static int[][] channelsToImage(byte[][] input, int height, int width) {
-    return Helper.fail("Not Implemented");
+    assert input != null;
+    assert input.length == width * height;
+    assert width > 0 && height > 0;
+
+    int[][] pixelsTabImageFormatted = new int[height][width];
+
+    for (int i = 0; i < height; ++i) {
+      assert input != null && input[i].length == 4;
+
+      for (int j = 0; j < width; ++j) {
+        byte[] pixelBytesFormatted = input[j + i * width];
+        // Put the alpha back on the first place
+        pixelBytesFormatted = concat(wrap(pixelBytesFormatted[3]), extract(pixelBytesFormatted, 0, 3));
+        pixelsTabImageFormatted[i][j] = toInt(pixelBytesFormatted);
+        System.out.println(Arrays.toString(pixelBytesFormatted));
+
+      }
+
+    }
+
+    return pixelsTabImageFormatted;
   }
 
 }

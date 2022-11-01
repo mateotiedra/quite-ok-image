@@ -259,22 +259,36 @@ public final class ArrayUtils {
    *                        or one of the inner arrays of input is null
    */
   public static byte[][] imageToChannels(int[][] input) {
+    //assert
     assert input!=null;
-    int tailleLine = input[0].length;
+    int tailleLine = input.length;
+    int tailleColonne = input[0].length;
     for (int[] line : input) {
       assert line != null;
-      assert line.length == tailleLine;
+      assert line.length == tailleColonne;
     }
+    //instance variable
+    byte[][] byteImage = new byte[tailleLine*tailleColonne][4];
+    byte[] argb = new byte[4];
+    int countPixel = 0;
+    byte byteBleu;
+    for (int i = 0;i<tailleLine;i++){
+      for (int j = 0;j<tailleColonne;j++){
+        argb = fromInt(input[i][j]); // [a,r,g,b] pour each pixel
+        byteBleu = argb[3];
+        argb[3] = argb[0];
+        argb[0] = argb[1];
+        argb[1] = argb[2];
+        argb[2] = byteBleu; // changement en [r,g,b,a]
+        for(int a =0;a<4;a++){
+          byteImage[countPixel][a] = argb[a];
 
-    byte[][] byteImage = new byte[input.length][];
-    byte r,g,b,a;
-    for (int i = 0;i<input.length;i++){
-      for (int j = 0;i<tailleLine;j++){
-        byteImage[i][j] = concat(r,g,b,a);
+        }
+        countPixel++;
       }
     }
 
-    return Helper.fail("Not Implemented");
+    return byteImage;
   }
 
   /**

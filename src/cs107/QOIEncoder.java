@@ -148,6 +148,9 @@ public final class QOIEncoder {
      * @return (byte[]) - Encoding of the given difference
      */
     public static byte[] qoiOpDiff(byte[] diff) {
+        assert diff != null;
+        assert diff.length == 3;
+
         int diffEncoded = 0b00000000;
         for (byte colorDiff : diff) {
             colorDiff += 2;

@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 /**
  * Main entry point of the program.
- * 
+ *
  * @apiNote Students are free to change it.
  *          This class will not be graded unless asked by the students
  *          and only if the changes are considered as a bonus
@@ -22,7 +22,7 @@ public final class Main {
 
   /**
    * Main entry point to the program
-   * 
+   *
    * @param args (String[]) - Arguments passed to the program via the command line
    */
   public static void main(String[] args) {
@@ -41,6 +41,8 @@ public final class Main {
      * You can always change the code of this method to change the behavior of
      * your program
      */
+
+
 
     // ========== Test ArrayUtils ==========
     // assert testWrap();
@@ -79,7 +81,7 @@ public final class Main {
 
   /**
    * Encodes a given file from "PNG" to "QOI"
-   * 
+   *
    * @param inputFile  (String) - The path of the file to encode
    * @param outputFile (String) - The path where to store the generated "Quite Ok
    *                   Image"
@@ -95,7 +97,7 @@ public final class Main {
 
   /**
    * Encodes a given file from "QOI" to "PNG"
-   * 
+   *
    * @param inputFile  (String) - The path of the file to decode
    * @param outputFile (String) - The path where to store the generated "PNG"
    *                   Image
@@ -111,7 +113,7 @@ public final class Main {
 
   /**
    * Computes the ratio
-   * 
+   *
    * @param png (int) - Size of the "PNG" file
    * @param qoi (int) - Size of the "QOI" file
    * @return (int) - The ratio

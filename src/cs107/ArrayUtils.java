@@ -31,13 +31,22 @@ public final class ArrayUtils {
    * @throws AssertionError if one of the parameters is null
    */
   public static boolean equals(byte[] a1, byte[] a2) {
-    System.out.println("fdsfd");
-    boolean sameArray = true;
-    for (int i = 0; i < a2.length; i++) {
-      System.out.println("fdsfd");
+    Boolean sameArray = true;
+    //check l'exeption null
+    if(a1 == null || a2 == null){
+      if(a1 == a2){
+        return sameArray;
+      }else{
+        assert false;
+      }
     }
-
-    return Helper.fail("Not Implemented");
+    //check égalité
+    for (int i = 0; i < a2.length; i++) {
+      if(a1[i] != a2[i]){
+        sameArray = false;
+      }
+    }
+    return (sameArray);
   }
 
   /**
@@ -50,7 +59,22 @@ public final class ArrayUtils {
    * @throws AssertionError if one of the parameters is null
    */
   public static boolean equals(byte[][] a1, byte[][] a2) {
-    return Helper.fail("Not Implemented");
+    Boolean sameArray = true;
+    //check null
+    if(a1 == null || a2 == null){
+      if(a1 == a2){
+        return sameArray;
+      }else{
+        assert false;
+      }
+    }
+    //check égalité
+    for(int i=0; i<a2.length;i++){
+      if(!equals(a1[i],a2[i])){
+        sameArray = false;
+      }
+    }
+    return (sameArray);
   }
 
   // ==================================================================================
@@ -65,9 +89,9 @@ public final class ArrayUtils {
    * @return (byte[]) - array with one element (value)
    */
   public static byte[] wrap(byte value) {
-    return Helper.fail("Not Implemented");
+    byte[] oui = {value};
+    return oui;
   }
-
   // ==================================================================================
   // ========================== INTEGER MANIPULATION METHODS
   // ==========================
@@ -84,7 +108,15 @@ public final class ArrayUtils {
    *                        different from 4
    */
   public static int toInt(byte[] bytes) {
-    return Helper.fail("Not Implemented");
+    if(bytes.length>4 && bytes != null || bytes ==null){
+      assert false;
+    }
+    int transformedByte = bytes[0];
+    for(int i = 0; i<bytes.length-1;i++){
+      transformedByte = transformedByte<<8;
+      transformedByte = transformedByte | bytes[i+1];
+    }
+    return transformedByte;
   }
 
   /**
@@ -96,7 +128,11 @@ public final class ArrayUtils {
    * @return (byte[]) - Big Endian representation of the integer
    */
   public static byte[] fromInt(int value) {
-    return Helper.fail("Not Implemented");
+    byte[] fromInt = new byte[4];
+    for (int i = 0; i<4; i++){
+      fromInt[i] = (byte) (value >>> (24-(8*i)));
+    }
+    return fromInt;
   }
 
   // ==================================================================================
@@ -112,7 +148,12 @@ public final class ArrayUtils {
    * @throws AssertionError if the input is null
    */
   public static byte[] concat(byte... bytes) {
-    return Helper.fail("Not Implemented");
+    assert bytes!=null;
+    byte[] ensembleDeByte = new byte[bytes.length];
+    for(int i = 0; i<bytes.length; i++){
+      ensembleDeByte[i] = bytes[i];
+    }
+    return ensembleDeByte;
   }
 
   /**
@@ -124,7 +165,23 @@ public final class ArrayUtils {
    *                        or one of the inner arrays of input is null.
    */
   public static byte[] concat(byte[]... tabs) {
-    return Helper.fail("Not Implemented");
+    int length = 0;
+    assert (tabs!=null);
+    for (int i = 0; i < tabs.length; i++){
+      if(tabs[i] == null){
+        assert false;
+      }
+      length += tabs[i].length;
+    }
+    byte[] ensembleDeByte = new byte[length];
+    int compter = 0;
+    for (int i = 0; i < tabs.length;i++){
+      for (int j = 0; j < tabs[i].length ;j++){
+        ensembleDeByte[compter] = tabs[i][j];
+        compter++;
+      }
+    }
+    return ensembleDeByte;
   }
 
   // ==================================================================================
@@ -144,9 +201,17 @@ public final class ArrayUtils {
    *                        length
    */
   public static byte[] extract(byte[] input, int start, int length) {
-    return Helper.fail("Not Implemented");
+    assert input!=null;
+    assert length>=0;
+    int inputLength = input.length;
+    assert start<inputLength;
+    assert start+length<=inputLength;
+    byte[] ensembleExtract = new byte[length];
+    for (int i = 0;i < length; i++){
+      ensembleExtract[i] = input[start + i];
+    }
+    return ensembleExtract;
   }
-
   /**
    * Create a partition of the input array.
    * (See handout for more information on how this method works)
@@ -160,7 +225,20 @@ public final class ArrayUtils {
    *                        the input's length
    */
   public static byte[][] partition(byte[] input, int... sizes) {
-    return Helper.fail("Not Implemented");
+    assert (input!=null) && (sizes!=null);
+    int sommeSizes = 0;
+    for(int i = 0 ; i<sizes.length; i++)
+      sommeSizes = sommeSizes + sizes[i];
+    assert sommeSizes==input.length;
+
+    byte[][] partitionedByte = new byte[sizes.length][];
+    int start = 0;
+    for(int j=0; j<sizes.length;j++){
+      partitionedByte[j] = extract(input,start,sizes[j]);
+      start += sizes[j];
+    }
+
+    return partitionedByte;
   }
 
   // ==================================================================================
@@ -181,6 +259,21 @@ public final class ArrayUtils {
    *                        or one of the inner arrays of input is null
    */
   public static byte[][] imageToChannels(int[][] input) {
+    assert input!=null;
+    int tailleLine = input[0].length;
+    for (int[] line : input) {
+      assert line != null;
+      assert line.length == tailleLine;
+    }
+
+    byte[][] byteImage = new byte[input.length][];
+    byte r,g,b,a;
+    for (int i = 0;i<input.length;i++){
+      for (int j = 0;i<tailleLine;j++){
+        byteImage[i][j] = concat(r,g,b,a);
+      }
+    }
+
     return Helper.fail("Not Implemented");
   }
 

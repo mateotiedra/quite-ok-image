@@ -108,7 +108,7 @@ public final class ArrayUtils {
    *                        different from 4
    */
   public static int toInt(byte[] bytes) {
-    if(bytes.length>4 && bytes != null || bytes ==null){
+    if(((bytes.length>4) && (bytes != null)) || (bytes ==null)){
       assert false;
     }
     int transformedByte = bytes[0];
@@ -269,25 +269,15 @@ public final class ArrayUtils {
     }
     //instance variable
     byte[][] byteImage = new byte[tailleLine*tailleColonne][4];
-    byte[] argb = new byte[4];
+    byte[] argb;
     int countPixel = 0;
-    byte byteBleu;
     for (int i = 0;i<tailleLine;i++){
       for (int j = 0;j<tailleColonne;j++){
         argb = fromInt(input[i][j]); // [a,r,g,b] pour each pixel
-        byteBleu = argb[3];
-        argb[3] = argb[0];
-        argb[0] = argb[1];
-        argb[1] = argb[2];
-        argb[2] = byteBleu; // changement en [r,g,b,a]
-        for(int a =0;a<4;a++){
-          byteImage[countPixel][a] = argb[a];
-
-        }
+          byteImage[countPixel] = concat(argb[1],argb[2],argb[3],argb[0]);//concatène rgba
         countPixel++;
       }
     }
-
     return byteImage;
   }
 
@@ -307,7 +297,23 @@ public final class ArrayUtils {
    *                        or width is invalid
    */
   public static int[][] channelsToImage(byte[][] input, int height, int width) {
-    return Helper.fail("Not Implemented");
+    assert input!=null;
+    for (int i=0 ;i<input.length;i++) {
+      assert input[i] != null;
+      assert input[i].length == 4;
+    }
+    assert input[0].length*input.length != height*width;
+    int[][] arrayChannelsToImage = new int[height][width];
+    int pixel = 0;
+    byte[] array = new byte[4];
+    for(int i=0; i<height;i++){
+      for(int j=0; j<width;j++){
+        array = concat(wrap(input[pixel][3]),extract(input[pixel],0,3));
+        arrayChannelsToImage[i][j] = toInt(array);
+        pixel++;
+      }
+    }
+    return arrayChannelsToImage;
   }
 
 }

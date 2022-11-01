@@ -42,33 +42,19 @@ public final class Main {
      * your program
      */
 
-    int[][] input = {{1, 2, 3, 4, 5},
-            {6, 7, 8, 9 ,10},
-            {11, 12, 13, 14, 15}};
-// output = [[0, 0, 1, 0], [0, 0, 2, 0], [0, 0, 3, 0],
-// [0, 0, 4, 0], [0, 0, 5, 0], [0, 0, 6, 0],
-// [0, 0, 7, 0], [0, 0, 8, 0], [0, 0, 9, 0],
-// [0, 0, 10, 0], [0, 0, 11, 0], [0, 0, 12, 0],
-// [0, 0, 13, 0], [0, 0, 14, 0], [0, 0, 15, 0]]
-    byte[][] output = ArrayUtils.imageToChannels(input);
-    for(int i=0;i<output.length;i++) {
-      System.out.println();
-      for (int j = 0; j < output[0].length; j++)
-        System.out.print(output[i][j]);
-    }
     // ========== Test ArrayUtils ==========
-    // assert testWrap();
-    // assert testToInt();
-    // assert testFromInt();
-    // assert testConcatArrayBytes();
-    // assert testConcatBytes();
-    // assert testExtract();
-    // assert testPartition();
-    // assert testImageToChannels();
-    // assert testChannelsToImage();
+    assert testWrap();
+    assert testToInt();
+    assert testFromInt();
+    assert testConcatArrayBytes();
+    assert testConcatBytes();
+    assert testExtract();
+    assert testPartition();
+    assert testImageToChannels();
+    assert testChannelsToImage();
 
     // ========== Test QOIEncoder ==========
-    // assert testQoiHeader();
+    assert testQoiHeader();
     // assert testQoiOpRGB();
     // assert testQoiOpRGBA();
     // assert testQoiOpIndex();

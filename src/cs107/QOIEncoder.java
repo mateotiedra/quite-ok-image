@@ -107,19 +107,18 @@ public final class QOIEncoder {
      * Add to the given valur of 6 bits the prefix tag of 2 bits
      * 
      * @param tag   (byte[]) - The tag to add
-     * @param pixel (byte[]) - The byte to encode
+     * @param value (byte[]) - The byte to encode
      * @throws AssertionError if the byte's value use more than 6 bits
      *                        if the tag's value use more than 2 bits
      * @return (byte[]) Encoding of the value by adding the 2 bits tag
      */
     public static byte addTagToValue(byte tag, byte value) {
-        Integer intTag = 0;
         assert useNBites(tag, 2);
 
         // set the two first bits of the value to 0
         assert useNBites(value, -6);
 
-        return (byte) (intTag | value);
+        return (byte) (tag | value);
     }
 
     /**
@@ -154,9 +153,9 @@ public final class QOIEncoder {
         int diffEncoded = 0b00000000;
         for (byte colorDiff : diff) {
             colorDiff += 2;
-
             assert useNBites(colorDiff, -2);
-            diffEncoded = (diffEncoded << 2) & colorDiff;
+
+            diffEncoded = (diffEncoded << 2) | colorDiff;
         }
 
         return ArrayUtils.wrap(addTagToValue(QOISpecification.QOI_OP_DIFF_TAG, (byte) (diffEncoded)));
@@ -172,7 +171,35 @@ public final class QOIEncoder {
      * @return (byte[]) - Encoding of the given difference
      */
     public static byte[] qoiOpLuma(byte[] diff) {
-        return Helper.fail("Not Implemented");
+        assert diff != null;
+        assert diff.length == 3;
+
+        int[] diffEncoded = { (byte) 0b00000000, (byte) 0b00000000 };
+
+        for (int i = 0; i < 3; i++) {
+            if (i == 1) {
+                // The green
+                byte colorDiff = (byte) (diff[i] + 32);
+                assert useNBites(colorDiff, -6);
+
+                diffEncoded[0] = colorDiff;
+            } else {
+                // The red and blue
+                byte colorDiff = (byte) ((diff[i] - diff[1]) + 8);
+                assert useNBites(colorDiff, -4);
+
+                diffEncoded[1] = (diffEncoded[1] << 4) | colorDiff;
+            }
+        }
+
+        /*
+         * System.out.println(diffEncoded[0]);
+         * System.out.println(diffEncoded[1]);
+         */
+
+        byte[] encoding = ArrayUtils.concat(addTagToValue(QOISpecification.QOI_OP_LUMA_TAG, (byte) (diffEncoded[0])),
+                (byte) (diffEncoded[1]));
+        return encoding;
     }
 
     /**

@@ -211,7 +211,10 @@ public final class QOIEncoder {
      * @return (byte[]) - Encoding of count
      */
     public static byte[] qoiOpRun(byte count) {
-        return Helper.fail("Not Implemented");
+        assert count >= 0 && count <= 62;
+        count += 1;
+
+        return new byte[] { addTagToValue(QOISpecification.QOI_OP_RUN_TAG, (byte) (count)) };
     }
 
     // ==================================================================================

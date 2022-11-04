@@ -38,15 +38,13 @@ public final class QOIEncoder {
 
         assert image.color_space() == QOISpecification.sRGB || image.color_space() == QOISpecification.ALL;
 
-        byte[] MAGIC_NUMBER = { (byte) 113, (byte) 111, (byte) 105, (byte) 102 };
-
         int[][] imageData = image.data();
 
         byte[] width = ArrayUtils.fromInt(imageData[0].length);
 
         byte[] height = ArrayUtils.fromInt(imageData.length);
 
-        byte[] header = ArrayUtils.concat(MAGIC_NUMBER, width, height, ArrayUtils.wrap(image.channels()),
+        byte[] header = ArrayUtils.concat(QOISpecification.QOI_MAGIC, width, height, ArrayUtils.wrap(image.channels()),
                 ArrayUtils.wrap(image.color_space()));
 
         return header;
@@ -211,7 +209,9 @@ public final class QOIEncoder {
      * @return (byte[]) - Encoding of count
      */
     public static byte[] qoiOpRun(byte count) {
-        return Helper.fail("Not Implemented");
+        assert count >= 1 && count <= 62;
+
+        return ArrayUtils.wrap(addTagToValue(QOISpecification.QOI_OP_RUN_TAG, (byte) (count - 1)));
     }
 
     // ==================================================================================
@@ -240,6 +240,9 @@ public final class QOIEncoder {
      * @throws AssertionError if the image is null
      */
     public static byte[] qoiFile(Helper.Image image) {
+        byte[] previousPixel = QOISpecification.START_PIXEL;
+        byte[][] hashTable = new byte[64][4];
+        int count = 0;
         return Helper.fail("Not Implemented");
     }
 

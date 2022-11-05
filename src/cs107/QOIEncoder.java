@@ -1,5 +1,8 @@
 package cs107;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * "Quite Ok Image" Encoder
  * 
@@ -59,8 +62,7 @@ public final class QOIEncoder {
      * @return (byte[]) - Encoding of the pixel using the QOI_OP_RGB schema
      */
     public static byte[] qoiOpRGB(byte[] pixel) {
-        assert pixel != null;
-        assert pixel.length == 4;
+        assert ArrayUtils.isPixel(pixel);
 
         return ArrayUtils.concat(ArrayUtils.wrap(QOISpecification.QOI_OP_RGB_TAG), ArrayUtils.extract(pixel, 0, 3));
     }
@@ -73,8 +75,7 @@ public final class QOIEncoder {
      * @return (byte[]) Encoding of the pixel using the QOI_OP_RGBA schema
      */
     public static byte[] qoiOpRGBA(byte[] pixel) {
-        assert pixel != null;
-        assert pixel.length == 4;
+        assert ArrayUtils.isPixel(pixel);
 
         return ArrayUtils.concat(ArrayUtils.wrap(QOISpecification.QOI_OP_RGBA_TAG), pixel);
     }
@@ -190,11 +191,6 @@ public final class QOIEncoder {
             }
         }
 
-        /*
-         * System.out.println(diffEncoded[0]);
-         * System.out.println(diffEncoded[1]);
-         */
-
         byte[] encoding = ArrayUtils.concat(addTagToValue(QOISpecification.QOI_OP_LUMA_TAG, (byte) (diffEncoded[0])),
                 (byte) (diffEncoded[1]));
         return encoding;
@@ -214,10 +210,192 @@ public final class QOIEncoder {
         return ArrayUtils.wrap(addTagToValue(QOISpecification.QOI_OP_RUN_TAG, (byte) (count - 1)));
     }
 
-    // ==================================================================================
-    // ============================== GLOBAL ENCODING METHODS
-    // ==========================
-    // ==================================================================================
+    // ==========================================================================
+    // ============================== GLOBAL ENCODING METHODS ===================
+    // ==========================================================================
+
+    /**
+     * If pixel == previous pixel, increase the counter and test if a QOI_OP_RUN can
+     * be built (counter reaching the limit of 62 or last pixel reached), then go to
+     * the next pixel otherwise test if a QOI_OP_RUN can be built and go to the next
+     * step
+     * 
+     * @param previousPixel (byte[]) - previous pixel
+     * @param pixel         (byte[]) - pixel to compare
+     * @param qoiOps        (ArrayList<byte[]>) - ArrayList to which the OP bytes
+     *                      will be added
+     * @param wrappedCount  (int[]) - the counter wrapped
+     * @return (boolean) - must stop to add other bytes for this pixel after that
+     */
+    public static boolean addQoiOpRun(byte[] previousPixel, byte[] pixel, ArrayList<byte[]> qoiOps, int[] wrappedCount,
+            boolean lastIteration) {
+        assert ArrayUtils.isPixel(previousPixel) && ArrayUtils.isPixel(pixel);
+        assert qoiOps != null && wrappedCount != null;
+
+        if (ArrayUtils.equals(pixel, previousPixel)) {
+            if (++wrappedCount[0] == 62) {
+                qoiOps.add(qoiOpRun((byte) 62));
+                wrappedCount[0] = 0;
+            }
+            if (!lastIteration)
+                return true;
+        } else if (wrappedCount[0] > 0) {
+            qoiOps.add(qoiOpRun((byte) wrappedCount[0]));
+            wrappedCount[0] = 0;
+        }
+
+        if (lastIteration && wrappedCount[0] > 0) {
+            qoiOps.add(qoiOpRun((byte) wrappedCount[0]));
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * If pixel is in the hash table, create a QOI_OP_INDEX block and go to the next
+     * pixel, otherwise add the pixel to the hash table and go to the next step
+     * 
+     * @param pixel     (byte[]) - pixel to compare
+     * @param qoiOps    (ArrayList<byte[]>) - ArrayList to which the OP bytes
+     * @param hashTable (byte[][]) - pixel to compare
+     * @return (boolean) - must stop to add other bytes for this pixel after that
+     */
+    public static boolean addQoiOpIndex(byte[] pixel, ArrayList<byte[]> qoiOps, byte[][] hashTable) {
+        assert ArrayUtils.isPixel(pixel);
+        assert qoiOps != null && hashTable != null;
+
+        byte pixelIndex = QOISpecification.hash(pixel);
+
+        if (ArrayUtils.equals(hashTable[pixelIndex], pixel)) {
+            qoiOps.add(qoiOpIndex(pixelIndex));
+            return true;
+        } else {
+            hashTable[pixelIndex] = pixel;
+        }
+
+        return false;
+    }
+
+    /**
+     * If the alpha channel is the same between the current and the previous pixel,
+     * and the difference between these pixels is small (according to the criteria
+     * specific to QOI_OP_DIFFa blocks) then create a QOI_OP_DIFF block and go to
+     * the next pixel, otherwise go to the next step.
+     * 
+     * @param previousPixel (byte[]) - previous pixel
+     * @param pixel         (byte[]) - pixel to compare
+     * @param qoiOps        (ArrayList<byte[]>) - ArrayList to which the OP bytes
+     *                      will be added
+     * @return (boolean) - must stop to add other bytes for this pixel after that
+     */
+    public static boolean addQoiOpDiff(byte[] previousPixel, byte[] pixel, ArrayList<byte[]> qoiOps) {
+        assert ArrayUtils.isPixel(previousPixel) && ArrayUtils.isPixel(pixel);
+        assert qoiOps != null;
+
+        // Not the same Alpha
+        if (pixel[3] != previousPixel[3])
+            return false;
+
+        byte[] rgbDiff = new byte[3];
+
+        for (int i = 0; i < pixel.length - 1; ++i) {
+            int diff = pixel[i] - previousPixel[i];
+
+            // A too great difference
+            if (diff <= -3 || diff >= 2)
+                return false;
+
+            rgbDiff[i] = (byte) (diff);
+        }
+
+        qoiOps.add(qoiOpDiff(rgbDiff));
+
+        return true;
+    }
+
+    /**
+     * If the alpha channel is the same between the current and the previous pixel,
+     * and the difference between these pixels matches the criteria of the
+     * QOI_OP_LUMA blocks, then create a block of this type and
+     * go to the next pixel, otherwise go to the next step
+     * 
+     * @param previousPixel (byte[]) - previous pixel
+     * @param pixel         (byte[]) - pixel to compare
+     * @param qoiOps        (ArrayList<byte[]>) - ArrayList to which the OP bytes
+     *                      will be added
+     * @return (boolean) - must stop to add other bytes for this pixel after that
+     */
+    public static boolean addQoiOpLuma(byte[] previousPixel, byte[] pixel, ArrayList<byte[]> qoiOps) {
+        assert ArrayUtils.isPixel(previousPixel) && ArrayUtils.isPixel(pixel);
+        assert qoiOps != null;
+
+        // Not the same Alpha
+        if (pixel[3] != previousPixel[3])
+            return false;
+
+        // Check for the green
+        int gDiff = pixel[1] - previousPixel[1];
+        if (gDiff <= -33 || gDiff >= 32)
+            return false;
+
+        // Check for the red
+        int rDiff = pixel[0] - previousPixel[0];
+        if (rDiff - gDiff <= -9 || rDiff - gDiff >= 8)
+            return false;
+
+        // Check for the blue
+        int bDiff = pixel[2] - previousPixel[2];
+        if (bDiff - gDiff <= -9 || bDiff - gDiff >= 8)
+            return false;
+
+        qoiOps.add(qoiOpLuma(new byte[] { (byte) (rDiff), (byte) (gDiff), (byte) (bDiff) }));
+
+        return true;
+    }
+
+    /**
+     * If the alpha channel is the same between the current pixel and the previous
+     * one, create a QOI_OP_RGB block (the alpha channel value being the one common
+     * to both pixels) and go to the next pixel, otherwise
+     * go to the next step
+     * 
+     * @param previousPixel (byte[]) - previous pixel
+     * @param pixel         (byte[]) - pixel to compare
+     * @param qoiOps        (ArrayList<byte[]>) - ArrayList to which the OP bytes
+     *                      will be added
+     * @return (boolean) - must stop to add other bytes for this pixel after that
+     */
+    public static boolean addQoiOpRGB(byte[] previousPixel, byte[] pixel, ArrayList<byte[]> qoiOps) {
+        assert ArrayUtils.isPixel(previousPixel) && ArrayUtils.isPixel(pixel);
+        assert qoiOps != null;
+
+        // Not the same Alpha
+        if (pixel[3] != previousPixel[3])
+            return false;
+
+        qoiOps.add(qoiOpRGB(pixel));
+
+        return true;
+    }
+
+    /**
+     * Create a QOI_OP_RGBA block
+     * 
+     * @param previousPixel (byte[]) - previous pixel
+     * @param pixel         (byte[]) - pixel to compare
+     * @param qoiOps        (ArrayList<byte[]>) - ArrayList to which the OP bytes
+     *                      will be added
+     * @return (boolean) - must stop to add other bytes for this pixel after that
+     */
+    public static boolean addQoiOpRGBA(byte[] previousPixel, byte[] pixel, ArrayList<byte[]> qoiOps) {
+        assert ArrayUtils.isPixel(previousPixel) && ArrayUtils.isPixel(pixel);
+        assert qoiOps != null;
+
+        qoiOps.add(qoiOpRGBA(pixel));
+
+        return true;
+    }
 
     /**
      * Encode the given image using the "Quite Ok Image" Protocol
@@ -227,7 +405,36 @@ public final class QOIEncoder {
      * @return (byte[]) - "Quite Ok Image" representation of the image
      */
     public static byte[] encodeData(byte[][] image) {
-        return Helper.fail("Not Implemented");
+        assert image != null;
+        byte[] previousPixel = QOISpecification.START_PIXEL;
+
+        // We wrap those two variable to be able to modify them in functions
+        byte[][] hashTable = new byte[64][4];
+        int[] wrappedCount = { 0 };
+
+        ArrayList<byte[]> qoiOps = new ArrayList<byte[]>();
+
+        for (int i = 0; i < image.length; ++i) {
+            byte[] pixel = image[i];
+
+            if (addQoiOpRun(previousPixel, pixel, qoiOps, wrappedCount, i == image.length - 1)) {
+                System.out.println("same pixel as the previous one (if last iteration of it : op run added)");
+            } else if (addQoiOpIndex(pixel, qoiOps, hashTable)) {
+                System.out.println("op index added");
+            } else if (addQoiOpDiff(previousPixel, pixel, qoiOps)) {
+                System.out.println("op diff added");
+            } else if (addQoiOpLuma(previousPixel, pixel, qoiOps)) {
+                System.out.println("op luma added");
+            } else if (addQoiOpRGB(previousPixel, pixel, qoiOps)) {
+                System.out.println("op rgb added");
+            } else if (addQoiOpRGBA(previousPixel, pixel, qoiOps)) {
+                System.out.println("op rgba added");
+            }
+
+            previousPixel = pixel;
+        }
+
+        return ArrayUtils.concat(qoiOps.toArray(new byte[0][]));
     }
 
     /**
@@ -240,9 +447,6 @@ public final class QOIEncoder {
      * @throws AssertionError if the image is null
      */
     public static byte[] qoiFile(Helper.Image image) {
-        byte[] previousPixel = QOISpecification.START_PIXEL;
-        byte[][] hashTable = new byte[64][4];
-        int count = 0;
         return Helper.fail("Not Implemented");
     }
 

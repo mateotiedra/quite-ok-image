@@ -264,6 +264,14 @@ public final class ArrayUtils {
     return pixelsTab;
   }
 
+  /*
+   * Check if the byte list is a correct pixel formal [R, G, B, A] or [A, R, G, B]
+   */
+
+  public static boolean isPixel(byte[] pixel) {
+    return pixel != null && pixel.length == 4;
+  }
+
   /**
    * Format a 2-dim byte array where the first dimension is the pixel
    * and the second is the channel to a 2-dim int array where the first
@@ -287,7 +295,7 @@ public final class ArrayUtils {
     int[][] pixelsTabImageFormatted = new int[height][width];
 
     for (int i = 0; i < height; ++i) {
-      assert input != null && input[i].length == 4;
+      assert isPixel(input[i]);
 
       for (int j = 0; j < width; ++j) {
         byte[] pixelBytesFormatted = input[j + i * width];

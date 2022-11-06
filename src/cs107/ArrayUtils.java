@@ -67,6 +67,19 @@ public final class ArrayUtils {
   }
 
   /**
+   * Check if the content of both arrays is the same
+   * 
+   * @param a1 (byte[][]) - First array
+   * @param a2 (byte[][]) - Second array
+   * @return (boolean) - true if both arrays have the same content (or both null),
+   *         false otherwise
+   * @throws AssertionError if one of the parameters is null
+   */
+  public static boolean equals(Helper.Image img1, Helper.Image img2) {
+    return equals(imageToChannels(img1.data()), imageToChannels(img2.data()));
+  }
+
+  /**
    * Wrap the given value in an array
    * 
    * @param value (byte) - value to wrap

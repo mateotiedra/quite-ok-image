@@ -300,7 +300,7 @@ public final class QOIEncoder {
         byte[] rgbDiff = new byte[3];
 
         for (int i = 0; i < pixel.length - 1; ++i) {
-            int diff = pixel[i] - previousPixel[i];
+            byte diff = (byte) (pixel[i] - previousPixel[i]);
 
             // A too great difference
             if (diff <= -3 || diff >= 2)
@@ -335,21 +335,21 @@ public final class QOIEncoder {
             return false;
 
         // Check for the green
-        int gDiff = pixel[1] - previousPixel[1];
+        byte gDiff = (byte) (pixel[1] - previousPixel[1]);
         if (gDiff <= -33 || gDiff >= 32)
             return false;
 
         // Check for the red
-        int rDiff = pixel[0] - previousPixel[0];
+        byte rDiff = (byte) (pixel[0] - previousPixel[0]);
         if (rDiff - gDiff <= -9 || rDiff - gDiff >= 8)
             return false;
 
         // Check for the blue
-        int bDiff = pixel[2] - previousPixel[2];
+        byte bDiff = (byte) (pixel[2] - previousPixel[2]);
         if (bDiff - gDiff <= -9 || bDiff - gDiff >= 8)
             return false;
 
-        qoiOps.add(qoiOpLuma(new byte[] { (byte) (rDiff), (byte) (gDiff), (byte) (bDiff) }));
+        qoiOps.add(qoiOpLuma(new byte[] { rDiff, gDiff, bDiff }));
 
         return true;
     }

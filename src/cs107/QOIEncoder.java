@@ -417,18 +417,11 @@ public final class QOIEncoder {
             byte[] pixel = image[i];
 
             if (addQoiOpRun(previousPixel, pixel, qoiOps, wrappedCount, i == image.length - 1)) {
-                // System.out.println("same pixel as the previous one (if last iteration of it :
-                // op run added)");
             } else if (addQoiOpIndex(pixel, qoiOps, hashTable)) {
-                // System.out.println("op index added");
             } else if (addQoiOpDiff(previousPixel, pixel, qoiOps)) {
-                // System.out.println("op diff added");
             } else if (addQoiOpLuma(previousPixel, pixel, qoiOps)) {
-                // System.out.println("op luma added");
             } else if (addQoiOpRGB(previousPixel, pixel, qoiOps)) {
-                // System.out.println("op rgb added");
             } else if (addQoiOpRGBA(previousPixel, pixel, qoiOps)) {
-                // System.out.println("op rgba added");
             }
 
             previousPixel = pixel;

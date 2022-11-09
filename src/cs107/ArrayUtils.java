@@ -112,6 +112,21 @@ public final class ArrayUtils {
   }
 
   /**
+   * Transform an array of bytes (not big endian) to an array of int
+   * 
+   * @param value (int) - The integer
+   * @return (byte[]) - Big Endian representation of the integer
+   */
+  public static int[] fromInt(byte[] tab) {
+    int[] intsArray = new int[tab.length];
+    for (int i = 0; i < tab.length; i++) {
+      intsArray[i] = (int) (tab[i]);
+    }
+
+    return intsArray;
+  }
+
+  /**
    * Separate the Integer (word) to 4 bytes. The Memory layout of this integer is
    * "Big Endian"
    * (See handout for the definition of "Big Endian")
@@ -130,6 +145,21 @@ public final class ArrayUtils {
   }
 
   /**
+   * Transform an array of int to an array of bytes (not big endian)
+   * 
+   * @param value (int) - The integer
+   * @return (byte[]) - Big Endian representation of the integer
+   */
+  public static byte[] fromInt(int[] tab) {
+    byte[] bytesArray = new byte[tab.length];
+    for (int i = 0; i < tab.length; i++) {
+      bytesArray[i] = (byte) (tab[i]);
+    }
+
+    return bytesArray;
+  }
+
+  /**
    * Concatenate a given sequence of bytes and stores them in an array
    * 
    * @param bytes (byte ...) - Sequence of bytes to store in the array
@@ -144,6 +174,23 @@ public final class ArrayUtils {
       bytesTab[i] = bytes[i];
     }
     return bytesTab;
+  }
+
+  /**
+   * Concatenate a given sequence of ints and stores them in an array
+   * 
+   * @param bytes (byte ...) - Sequence of bytes to store in the array
+   * @return (byte[]) - Array representation of the sequence
+   * @throws AssertionError if the input is null
+   */
+  public static int[] concat(int... ints) {
+    assert ints != null && ints.length != 0;
+
+    int[] intsTab = new int[ints.length];
+    for (int i = 0; i < ints.length; i++) {
+      intsTab[i] = ints[i];
+    }
+    return intsTab;
   }
 
   /**
@@ -169,6 +216,31 @@ public final class ArrayUtils {
     }
 
     return bytesArray;
+  }
+
+  /**
+   * Concatenate a given sequence of arrays into one array
+   * 
+   * @param tabs (int[] ...) - Sequence of arrays
+   * @return (byte[]) - Array representation of the sequence
+   * @throws AssertionError if the input is null
+   *                        or one of the inner arrays of input is null.
+   */
+  public static int[] concat(int[]... tabs) {
+    assert tabs != null;
+    ArrayList<Integer> intList = new ArrayList<Integer>();
+    for (int i = 0; i < tabs.length; i++) {
+      assert tabs[i] != null;
+      for (int j = 0; j < tabs[i].length; j++) {
+        intList.add(tabs[i][j]);
+      }
+    }
+    int[] intArray = new int[intList.size()];
+    for (int i = 0; i < intArray.length; i++) {
+      intArray[i] = intList.get(i);
+    }
+
+    return intArray;
   }
 
   /**

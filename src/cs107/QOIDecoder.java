@@ -23,6 +23,8 @@ public final class QOIDecoder {
     // ==================================================================================
     // =========================== QUITE OK IMAGE HEADER
     // ================================
+    // =========================== QUITE OK IMAGE HEADER
+    // ================================
     // ==================================================================================
 
     /**
@@ -54,6 +56,20 @@ public final class QOIDecoder {
     // =========================== ATOMIC DECODING METHODS
     // ==============================
     // ==================================================================================
+
+    /**
+     * Check if two byte have the same tag on the two first bits
+     * 
+     * @param chunk (byte) - A data chunk
+     * @param tag   (byte) - A tag to check
+     * @return (boolean) - Whether the chunk has the right tag
+     * @throws AssertionError If the chunk or the tag is null
+     */
+    public static boolean hasTag(byte chunk, byte tag) {
+        byte chunkTag = (byte) (chunk & 0b11000000);
+
+        return chunkTag == tag;
+    }
 
     /**
      * Store the pixel in the buffer and return the number of consumed bytes
@@ -101,7 +117,17 @@ public final class QOIDecoder {
      * @throws AssertionError See handouts section 6.2.4
      */
     public static byte[] decodeQoiOpDiff(byte[] previousPixel, byte chunk) {
-        return Helper.fail("Not Implemented");
+        assert ArrayUtils.isPixel(previousPixel);
+        assert hasTag(chunk, QOISpecification.QOI_OP_DIFF_TAG);
+
+        byte selectionByte = (byte) (0b00000011);
+
+        byte rDiff = (byte) (((chunk >> 4) & selectionByte) - 2);
+        byte gDiff = (byte) (((chunk >> 2) & selectionByte) - 2);
+        byte bDiff = (byte) (((chunk) & selectionByte) - 2);
+
+        return new byte[] { (byte) (previousPixel[0] + rDiff), (byte) (previousPixel[1] + gDiff),
+                (byte) (previousPixel[2] + bDiff), previousPixel[3] };
     }
 
     /**
@@ -113,7 +139,16 @@ public final class QOIDecoder {
      * @throws AssertionError See handouts section 6.2.5
      */
     public static byte[] decodeQoiOpLuma(byte[] previousPixel, byte[] data) {
-        return Helper.fail("Not Implemented");
+        assert ArrayUtils.isPixel(previousPixel);
+        assert data != null;
+        assert hasTag(data[0], QOISpecification.QOI_OP_LUMA_TAG);
+
+        byte gDiff = (byte) ((data[0] & 0b00111111) - 32);
+        byte rDiff = (byte) (((data[1] >> 4) & 0b00001111) + gDiff - 8);
+        byte bDiff = (byte) ((data[1] & 0b00001111) + gDiff - 8);
+
+        return new byte[] { (byte) (previousPixel[0] + rDiff), (byte) (previousPixel[1] + gDiff),
+                (byte) (previousPixel[2] + bDiff), previousPixel[3] };
     }
 
     /**
@@ -127,7 +162,19 @@ public final class QOIDecoder {
      * @throws AssertionError See handouts section 6.2.6
      */
     public static int decodeQoiOpRun(byte[][] buffer, byte[] pixel, byte chunk, int position) {
-        return Helper.fail("Not Implemented");
+        assert buffer != null;
+        assert position >= 0 && position < buffer.length;
+        assert ArrayUtils.isPixel(pixel);
+        assert buffer[position].length == 4;
+        assert hasTag(chunk, QOISpecification.QOI_OP_RUN_TAG);
+
+        int nbrOfReproduction = (chunk & 0b00111111) + 1;
+
+        for (int i = position; i < position + nbrOfReproduction; ++i) {
+            buffer[i] = pixel;
+        }
+
+        return nbrOfReproduction - 1;
     }
 
     // ==================================================================================

@@ -192,10 +192,10 @@ public final class QOIDecoder {
      * @throws AssertionError If encodedData or wrappedIdx are null or if wrappedIdx
      *                        is not valid
      */
-    public static byte getTag(byte[] encodedData, int[] wrappedIdx) {
+    public static byte getByte(byte[] encodedData, int[] wrappedIdx) {
         assert encodedData != null;
         assert wrappedIdx != null;
-        assert wrappedIdx[0] > 0 && wrappedIdx[0] < encodedData.length;
+        assert wrappedIdx[0] >= 0 && wrappedIdx[0] < encodedData.length;
 
         return encodedData[wrappedIdx[0]];
     }
@@ -218,7 +218,8 @@ public final class QOIDecoder {
     }
 
     /**
-     * Check if there's an rgba tag if yes add the pixel to the buffer
+     * Check if there's an rgba tag if yes add the pixel to the buffer and increment
+     * the wrappedIdx accordingly
      * 
      * @param input           (byte[]) - The data to decode
      * @param buffer          (byte[][]) - The decoded data
@@ -230,17 +231,19 @@ public final class QOIDecoder {
             int[] wrappedPosition, int[] wrappedIdx) {
         assert input != null;
         assert wrappedIdx != null;
-        assert wrappedIdx[0] > 0 && wrappedIdx[0] < input.length;
+        assert wrappedIdx[0] >= 0 && wrappedIdx[0] < input.length;
 
-        if (getTag(input, wrappedIdx) == QOISpecification.QOI_OP_RGBA_TAG) {
-            wrappedIdx[0] += decodeQoiOpRGBA(buffer, input, wrappedPosition[0], ++wrappedIdx[0]);
+        if (getByte(input, wrappedIdx) == QOISpecification.QOI_OP_RGBA_TAG) {
+            ++wrappedIdx[0];
+            wrappedIdx[0] += decodeQoiOpRGBA(buffer, input, wrappedPosition[0], wrappedIdx[0]);
             return true;
         } else
             return false;
     }
 
     /**
-     * Check if there's an rgb tag if yes add the pixel to the buffer
+     * Check if there's an rgb tag if yes add the pixel to the buffer and increment
+     * the wrappedIdx accordingly
      * 
      * @param previousPixel   (byte[]) - Previous pixel
      * @param input           (byte[]) - The data to decode
@@ -254,17 +257,19 @@ public final class QOIDecoder {
         assert ArrayUtils.isPixel(previousPixel);
         assert input != null;
         assert wrappedIdx != null;
-        assert wrappedIdx[0] > 0 && wrappedIdx[0] < input.length;
+        assert wrappedIdx[0] >= 0 && wrappedIdx[0] < input.length;
 
-        if (getTag(input, wrappedIdx) == QOISpecification.QOI_OP_RGB_TAG) {
-            wrappedIdx[0] += decodeQoiOpRGB(buffer, input, previousPixel[3], wrappedPosition[0], ++wrappedIdx[0]);
+        if (getByte(input, wrappedIdx) == QOISpecification.QOI_OP_RGB_TAG) {
+            ++wrappedIdx[0];
+            wrappedIdx[0] += decodeQoiOpRGB(buffer, input, previousPixel[3], wrappedPosition[0], wrappedIdx[0]);
             return true;
         } else
             return false;
     }
 
     /**
-     * Check if there's an luma tag if yes add the pixel to the buffer
+     * Check if there's an luma tag if yes add the pixel to the buffer and increment
+     * the wrappedIdx accordingly
      * 
      * @param previousPixel   (byte[]) - Previous pixel
      * @param input           (byte[]) - The data to decode
@@ -278,9 +283,9 @@ public final class QOIDecoder {
         assert ArrayUtils.isPixel(previousPixel);
         assert input != null;
         assert wrappedIdx != null;
-        assert wrappedIdx[0] > 0 && wrappedIdx[0] < input.length;
+        assert wrappedIdx[0] >= 0 && wrappedIdx[0] < input.length;
 
-        if (hasTag(input[wrappedPosition[0]], QOISpecification.QOI_OP_LUMA_TAG)) {
+        if (hasTag(getByte(input, wrappedIdx), QOISpecification.QOI_OP_LUMA_TAG)) {
             buffer[wrappedPosition[0]] = decodeQoiOpLuma(previousPixel, ArrayUtils.extract(input, wrappedIdx[0], 2));
             wrappedIdx[0] += 2;
             return true;
@@ -289,7 +294,8 @@ public final class QOIDecoder {
     }
 
     /**
-     * Check if there's an diff tag if yes add the pixel to the buffer
+     * Check if there's an diff tag if yes add the pixel to the buffer and increment
+     * the wrappedIdx accordingly
      * 
      * @param previousPixel   (byte[]) - Previous pixel
      * @param input           (byte[]) - The data to decode
@@ -303,10 +309,12 @@ public final class QOIDecoder {
         assert ArrayUtils.isPixel(previousPixel);
         assert input != null;
         assert wrappedIdx != null;
-        assert wrappedIdx[0] > 0 && wrappedIdx[0] < input.length;
+        assert wrappedIdx[0] >= 0 && wrappedIdx[0] < input.length;
 
-        if (hasTag(input[wrappedPosition[0]], QOISpecification.QOI_OP_DIFF_TAG)) {
-            buffer[wrappedPosition[0]] = decodeQoiOpDiff(previousPixel, input[wrappedIdx[0]]);
+        byte chunk = getByte(input, wrappedIdx);
+
+        if (hasTag(chunk, QOISpecification.QOI_OP_DIFF_TAG)) {
+            buffer[wrappedPosition[0]] = decodeQoiOpDiff(previousPixel, chunk);
             ++wrappedIdx[0];
             return true;
         } else
@@ -314,7 +322,8 @@ public final class QOIDecoder {
     }
 
     /**
-     * Check if there's an diff tag if yes add the pixel to the buffer
+     * Check if there's an index tag if yes add the pixel to the buffer and
+     * increment the wrappedIdx accordingly
      * 
      * @param previousPixel   (byte[]) - Previous pixel
      * @param input           (byte[]) - The data to decode
@@ -325,31 +334,31 @@ public final class QOIDecoder {
      * 
      * @return (boolean) - Whether the tag corresponded
      */
-    public static boolean addDecodedQoiOpIndex(byte[] previousPixel, byte[] input, byte[][] buffer,
+    public static boolean addDecodedQoiOpIndex(byte[] input, byte[][] buffer,
             int[] wrappedPosition, int[] wrappedIdx, byte[][] hashTable) {
-        assert ArrayUtils.isPixel(previousPixel);
         assert input != null;
         assert wrappedIdx != null;
-        assert wrappedIdx[0] > 0 && wrappedIdx[0] < input.length;
+        assert wrappedIdx[0] >= 0 && wrappedIdx[0] < input.length;
         assert hashTable != null;
 
-        // TODO
+        byte chunk = getByte(input, wrappedIdx);
 
-        /*
-         * if (hasTag(input[wrappedPosition[0]], QOISpecification.QOI_OP_DIFF_TAG)) {
-         * buffer[wrappedPosition[0]] = decodeQoiOpIndex(previousPixel,
-         * input[wrappedIdx[0]]);
-         * ++wrappedIdx[0];
-         * return true;
-         * } else
-         * return false;
-         */
+        if (hasTag(chunk, QOISpecification.QOI_OP_INDEX_TAG)) {
+            int pixelIndex = chunk & 0b00111111;
+
+            byte[] pixel = hashTable[pixelIndex];
+            assert ArrayUtils.isPixel(pixel);
+
+            buffer[wrappedPosition[0]] = pixel;
+            return true;
+        }
 
         return false;
     }
 
     /**
-     * Check if there's an diff tag if yes add the pixel to the buffer
+     * Check if there's an run tag if yes add the pixels to the buffer and increment
+     * the wrappedIdx accordingly
      * 
      * @param previousPixel   (byte[]) - Previous pixel
      * @param input           (byte[]) - The data to decode
@@ -364,19 +373,15 @@ public final class QOIDecoder {
         assert ArrayUtils.isPixel(previousPixel);
         assert input != null;
         assert wrappedIdx != null;
-        assert wrappedIdx[0] > 0 && wrappedIdx[0] < input.length;
+        assert wrappedIdx[0] >= 0 && wrappedIdx[0] < input.length;
 
-        // TODO
+        byte chunk = getByte(input, wrappedIdx);
 
-        /*
-         * if (hasTag(input[wrappedPosition[0]], QOISpecification.QOI_OP_DIFF_TAG)) {
-         * buffer[wrappedPosition[0]] = decodeQoiOpIndex(previousPixel,
-         * input[wrappedIdx[0]]);
-         * ++wrappedIdx[0];
-         * return true;
-         * } else
-         * return false;
-         */
+        if (hasTag(chunk, QOISpecification.QOI_OP_RUN_TAG)) {
+            wrappedPosition[0] += decodeQoiOpRun(buffer, previousPixel, chunk, wrappedPosition[0]);
+            ++wrappedIdx[0];
+            return true;
+        }
 
         return false;
     }
@@ -393,23 +398,25 @@ public final class QOIDecoder {
     public static byte[][] decodeData(byte[] data, int width, int height) {
         assert data != null;
         assert width > 0 && height > 0;
+
+        int nbrOfPixels = width * height;
         byte[] previousPixel = QOISpecification.START_PIXEL;
 
         // We wrap those two variable to be able to modify them in functions
         byte[][] hashTable = new byte[64][4];
 
-        byte[][] buffer = new byte[width * height][4];
+        byte[][] buffer = new byte[nbrOfPixels][4];
 
         // Wrapped counter
         int[] wrappedIdx = { 0 };
         int[] wrappedPosition = { 0 };
 
-        while (wrappedIdx[0] < data.length) {
+        while (wrappedIdx[0] < data.length && wrappedPosition[0] < nbrOfPixels) {
             if (addDecodedQoiOpRGBA(data, buffer, wrappedPosition, wrappedIdx)) {
             } else if (addDecodedQoiOpRGB(previousPixel, data, buffer, wrappedPosition, wrappedIdx)) {
             } else if (addDecodedQoiOpLuma(previousPixel, data, buffer, wrappedPosition, wrappedIdx)) {
             } else if (addDecodedQoiOpDiff(previousPixel, data, buffer, wrappedPosition, wrappedIdx)) {
-            } else if (addDecodedQoiOpIndex(previousPixel, data, buffer, wrappedPosition, wrappedIdx, hashTable)) {
+            } else if (addDecodedQoiOpIndex(data, buffer, wrappedPosition, wrappedIdx, hashTable)) {
             } else if (addDecodedQoiOpRun(previousPixel, data, buffer, wrappedPosition, wrappedIdx)) {
             } else {
                 System.out.println("Problemos");
@@ -417,10 +424,12 @@ public final class QOIDecoder {
 
             byte[] pixel = buffer[wrappedPosition[0]];
             addToHashTable(hashTable, pixel);
-            ++wrappedPosition[0];
             previousPixel = pixel;
 
+            ++wrappedPosition[0];
         }
+
+        assert wrappedIdx[0] == data.length && wrappedPosition[0] == nbrOfPixels;
 
         return buffer;
     }

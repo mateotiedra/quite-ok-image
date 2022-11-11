@@ -64,7 +64,7 @@ public final class Main {
     assert testQoiOpLuma();
     assert testQoiOpRun();
     assert testEncodeData();
-    assert testEncodeDataWithImage();
+    assert testEncodeDataWithImages();
     assert testQoiFile();
 
     // ========== Test QOIDecoder ==========
@@ -75,7 +75,7 @@ public final class Main {
     assert testDecodeQoiOpLuma();
     assert testDecodeQoiOpRun();
     assert testDecodeData();
-    assert testDecodeDataWithImage();
+    assert testDecodeQoiFile();
 
     System.out.println("All the tests passes. Congratulations");
   }
@@ -268,10 +268,10 @@ public final class Main {
     return Arrays.equals(expected, encoding);
   }
 
-  private static boolean testEncodeDataWithImage() {
+  private static boolean testEncodeDataWithImages() {
     String[] imgToTestListName = { "random", "cube", "EPFL", "qoi_encode_test", "dice", "beach" };
 
-    System.out.println("Test the data (without header and EOF)");
+    System.out.println("Test the encodeData with the references images");
 
     for (String imgToTestName : imgToTestListName) {
       Helper.Image testImg = Helper.readImage("../references/" + imgToTestName + ".png");
@@ -309,7 +309,7 @@ public final class Main {
   private static boolean testQoiFile() {
     String[] imgToTestListName = { "random", "EPFL", "dice", "cube", "beach" };
 
-    System.out.println("\nTest the files");
+    System.out.println("\nTest the qoiFile with the references images");
 
     for (String imgToTestName : imgToTestListName) {
 
@@ -409,10 +409,10 @@ public final class Main {
     return Arrays.deepEquals(expected, result);
   }
 
-  private static boolean testDecodeDataWithImage() {
+  private static boolean testDecodeQoiFile() {
     String[] imgToTestListName = { "cube", "random", "EPFL", "qoi_encode_test", "dice", "beach" };
 
-    System.out.println("Test the decode data");
+    System.out.println("\nTest decodeQoiFile");
 
     for (String imgToTestName : imgToTestListName) {
       byte[] testQoi = Helper.read("../references/" + imgToTestName + ".qoi");
@@ -427,32 +427,8 @@ public final class Main {
         System.out.println(imgToTestName + " ERROR");
         return false;
       }
-
-      /*
-       * if (!ArrayUtils.equals(expectedData, encodedData)) {
-       * System.out.print(imgToTestName + " ERROR from byte : ");
-       * 
-       * for (int i = 0; i < Math.max(expectedData.length, encodedData.length); ++i) {
-       * if (expectedData[i] != encodedData[i]) {
-       * System.out.println(i);
-       * byte[] expectedDataExtractedError = ArrayUtils.extract(expectedData, i - 2,
-       * 10);
-       * byte[] encodedDataExtractedError = ArrayUtils.extract(encodedData, i - 2,
-       * 10);
-       * 
-       * System.out.println(
-       * "Expected : " + Arrays.toString(expectedDataExtractedError) + "\n" +
-       * "Your result : " + Arrays.toString(encodedDataExtractedError));
-       * break;
-       * }
-       * }
-       * return false;
-       * } else {
-       * System.out.println(imgToTestName + " OK");
-       * 
-       * }
-       */
     }
+
     return true;
   }
 

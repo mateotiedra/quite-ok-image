@@ -444,9 +444,13 @@ public final class QOIDecoder {
      * @throws AssertionError if content is null
      */
     public static Image decodeQoiFile(byte[] content) {
+        assert content != null;
+
         byte[][] partitionedContent = ArrayUtils.partition(content, QOISpecification.HEADER_SIZE,
                 content.length - QOISpecification.HEADER_SIZE - QOISpecification.QOI_EOF.length,
                 QOISpecification.QOI_EOF.length);
+
+        assert ArrayUtils.equals(partitionedContent[2], QOISpecification.QOI_EOF);
 
         int[] headerInfos = decodeHeader(partitionedContent[0]);
 

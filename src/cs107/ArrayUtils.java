@@ -102,13 +102,20 @@ public final class ArrayUtils {
   public static int toInt(byte[] bytes) {
     assert bytes != null && bytes.length == 4;
 
-    int value = 0;
-    for (int i = 0; i < bytes.length; i++) {
-      value = value << 8;
-      value = value | bytes[i];
-    }
+    /*
+     * int value = 0;
+     * for (int i = 0; i < bytes.length; i++) {
+     * value = value << 8;
+     * value = value | bytes[i];
+     * }
+     */
 
-    return value;
+    int byte1 = bytes[0] << 24 & 0xff_00_00_00;
+    int byte2 = bytes[1] << 16 & 0x00_ff_00_00;
+    int byte3 = bytes[2] << 8 & 0x00_00_ff_00;
+    int byte4 = bytes[3] & 0x00_00_00_ff;
+
+    return byte1 | byte2 | byte3 | byte4;
   }
 
   /**

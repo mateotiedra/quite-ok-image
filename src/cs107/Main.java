@@ -55,18 +55,17 @@ public final class Main {
     assert testChannelsToImage();
 
     // ========== Test QOIEncoder ==========
-    /*
-     * assert testQoiHeader();
-     * assert testQoiOpRGB();
-     * assert testQoiOpRGBA();
-     * assert testQoiOpIndex();
-     * assert testQoiOpDiff();
-     * assert testQoiOpLuma();
-     * assert testQoiOpRun();
-     * assert testEncodeData();
-     * assert testEncodeDataWithImage();
-     * assert testQoiFile();
-     */
+
+    assert testQoiHeader();
+    assert testQoiOpRGB();
+    assert testQoiOpRGBA();
+    assert testQoiOpIndex();
+    assert testQoiOpDiff();
+    assert testQoiOpLuma();
+    assert testQoiOpRun();
+    assert testEncodeData();
+    assert testEncodeDataWithImage();
+    assert testQoiFile();
 
     // ========== Test QOIDecoder ==========
     assert testDecodeHeader();
@@ -76,6 +75,7 @@ public final class Main {
     assert testDecodeQoiOpLuma();
     assert testDecodeQoiOpRun();
     assert testDecodeData();
+    assert testDecodeDataWithImage();
 
     System.out.println("All the tests passes. Congratulations");
   }
@@ -274,11 +274,11 @@ public final class Main {
     System.out.println("Test the data (without header and EOF)");
 
     for (String imgToTestName : imgToTestListName) {
-      Helper.Image testImg = Helper.readImage("./references/" + imgToTestName + ".png");
+      Helper.Image testImg = Helper.readImage("../references/" + imgToTestName + ".png");
 
       byte[] encodedData = QOIEncoder.encodeData(ArrayUtils.imageToChannels(testImg.data()));
 
-      byte[] expectedResultQoi = Helper.read("./references/" + imgToTestName + ".qoi");
+      byte[] expectedResultQoi = Helper.read("../references/" + imgToTestName + ".qoi");
       byte[] expectedData = ArrayUtils.extract(expectedResultQoi, QOISpecification.HEADER_SIZE,
           expectedResultQoi.length - QOISpecification.HEADER_SIZE - QOISpecification.QOI_EOF.length);
 
@@ -309,15 +309,18 @@ public final class Main {
   private static boolean testQoiFile() {
     String[] imgToTestListName = { "random", "EPFL", "dice", "cube", "beach" };
 
-    System.out.println("Test the files");
+    System.out.println("\nTest the files");
 
     for (String imgToTestName : imgToTestListName) {
-      Helper.Image testImg = Helper.readImage("./references/" + imgToTestName + ".png");
 
-      Helper.write(imgToTestName + ".qoi", QOIEncoder.qoiFile(testImg));
+      Helper.Image testImg = Helper.readImage("../references/" + imgToTestName + ".png");
 
-      byte[] expectedData = Helper.read("./references/" + imgToTestName + ".qoi");
-      byte[] expectedResultQoi = Helper.read("./res/" + imgToTestName + ".qoi");
+      byte[] newImage = QOIEncoder.qoiFile(testImg);
+
+      Helper.write(imgToTestName + ".qoi", newImage);
+
+      byte[] expectedData = Helper.read("../references/" + imgToTestName + ".qoi");
+      byte[] expectedResultQoi = Helper.read("../res/" + imgToTestName + ".qoi");
 
       if (!ArrayUtils.equals(expectedData, expectedResultQoi)) {
         System.out.println(imgToTestName + " ERROR");
@@ -404,6 +407,53 @@ public final class Main {
 
     byte[][] result = QOIDecoder.decodeData(encoding, 4, 2);
     return Arrays.deepEquals(expected, result);
+  }
+
+  private static boolean testDecodeDataWithImage() {
+    String[] imgToTestListName = { "cube", "random", "EPFL", "qoi_encode_test", "dice", "beach" };
+
+    System.out.println("Test the decode data");
+
+    for (String imgToTestName : imgToTestListName) {
+      byte[] testQoi = Helper.read("../references/" + imgToTestName + ".qoi");
+
+      Helper.Image expectedImage = Helper.readImage("../references/" + imgToTestName + ".png");
+
+      Helper.Image decodedImage = QOIDecoder.decodeQoiFile(testQoi);
+
+      if (expectedImage.equals(decodedImage)) {
+        System.out.println(imgToTestName + " OK");
+      } else {
+        System.out.println(imgToTestName + " ERROR");
+        return false;
+      }
+
+      /*
+       * if (!ArrayUtils.equals(expectedData, encodedData)) {
+       * System.out.print(imgToTestName + " ERROR from byte : ");
+       * 
+       * for (int i = 0; i < Math.max(expectedData.length, encodedData.length); ++i) {
+       * if (expectedData[i] != encodedData[i]) {
+       * System.out.println(i);
+       * byte[] expectedDataExtractedError = ArrayUtils.extract(expectedData, i - 2,
+       * 10);
+       * byte[] encodedDataExtractedError = ArrayUtils.extract(encodedData, i - 2,
+       * 10);
+       * 
+       * System.out.println(
+       * "Expected : " + Arrays.toString(expectedDataExtractedError) + "\n" +
+       * "Your result : " + Arrays.toString(encodedDataExtractedError));
+       * break;
+       * }
+       * }
+       * return false;
+       * } else {
+       * System.out.println(imgToTestName + " OK");
+       * 
+       * }
+       */
+    }
+    return true;
   }
 
 }

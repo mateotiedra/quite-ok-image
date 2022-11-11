@@ -350,6 +350,7 @@ public final class QOIDecoder {
             assert ArrayUtils.isPixel(pixel);
 
             buffer[wrappedPosition[0]] = pixel;
+            ++wrappedIdx[0];
             return true;
         }
 
@@ -412,6 +413,7 @@ public final class QOIDecoder {
         int[] wrappedPosition = { 0 };
 
         while (wrappedIdx[0] < data.length && wrappedPosition[0] < nbrOfPixels) {
+
             if (addDecodedQoiOpRGBA(data, buffer, wrappedPosition, wrappedIdx)) {
             } else if (addDecodedQoiOpRGB(previousPixel, data, buffer, wrappedPosition, wrappedIdx)) {
             } else if (addDecodedQoiOpLuma(previousPixel, data, buffer, wrappedPosition, wrappedIdx)) {
@@ -442,7 +444,21 @@ public final class QOIDecoder {
      * @throws AssertionError if content is null
      */
     public static Image decodeQoiFile(byte[] content) {
-        return Helper.fail("Not Implemented");
+        byte[][] partitionedContent = ArrayUtils.partition(content, QOISpecification.HEADER_SIZE,
+                content.length - QOISpecification.HEADER_SIZE - QOISpecification.QOI_EOF.length,
+                QOISpecification.QOI_EOF.length);
+
+        int[] headerInfos = decodeHeader(partitionedContent[0]);
+
+        int width = headerInfos[0];
+        int height = headerInfos[1];
+
+        byte[][] decodedData = decodeData(partitionedContent[1], width, height);
+
+        Helper.Image newImage = Helper.generateImage(ArrayUtils.channelsToImage(decodedData, height, width),
+                (byte) (headerInfos[2]), (byte) (headerInfos[3]));
+
+        return newImage;
     }
 
 }

@@ -1,6 +1,5 @@
 package cs107;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 /**
@@ -64,8 +63,8 @@ public final class Main {
     assert testQoiOpLuma();
     assert testQoiOpRun();
     assert testEncodeData();
-    assert testEncodeDataWithImages();
-    assert testQoiFile();
+    assert testEncodeDataWithImages("cube", "random", "EPFL", "qoi_encode_test", "dice", "beach");
+    assert testQoiFile("cube", "random", "EPFL", "qoi_encode_test", "dice", "beach");
 
     // ========== Test QOIDecoder ==========
     assert testDecodeHeader();
@@ -75,7 +74,7 @@ public final class Main {
     assert testDecodeQoiOpLuma();
     assert testDecodeQoiOpRun();
     assert testDecodeData();
-    assert testDecodeQoiFile();
+    assert testDecodeQoiFile("cube", "random", "EPFL", "qoi_encode_test", "dice", "beach");
 
     System.out.println("All the tests passes. Congratulations");
   }
@@ -235,7 +234,7 @@ public final class Main {
     byte index = 43;
     byte[] expected = { 43 };
     byte[] encoding = QOIEncoder.qoiOpIndex(index);
-    return true;
+    return ArrayUtils.equals(expected, encoding);
     // return Arrays.equals(expected, encoding);
   }
 
@@ -268,17 +267,15 @@ public final class Main {
     return Arrays.equals(expected, encoding);
   }
 
-  private static boolean testEncodeDataWithImages() {
-    String[] imgToTestListName = { "random", "cube", "EPFL", "qoi_encode_test", "dice", "beach" };
-
+  private static boolean testEncodeDataWithImages(String... imgToTestListName) {
     System.out.println("Test the encodeData with the references images");
 
     for (String imgToTestName : imgToTestListName) {
-      Helper.Image testImg = Helper.readImage("../references/" + imgToTestName + ".png");
+      Helper.Image testImg = Helper.readImage("references/" + imgToTestName + ".png");
 
       byte[] encodedData = QOIEncoder.encodeData(ArrayUtils.imageToChannels(testImg.data()));
 
-      byte[] expectedResultQoi = Helper.read("../references/" + imgToTestName + ".qoi");
+      byte[] expectedResultQoi = Helper.read("references/" + imgToTestName + ".qoi");
       byte[] expectedData = ArrayUtils.extract(expectedResultQoi, QOISpecification.HEADER_SIZE,
           expectedResultQoi.length - QOISpecification.HEADER_SIZE - QOISpecification.QOI_EOF.length);
 
@@ -306,21 +303,19 @@ public final class Main {
     return true;
   }
 
-  private static boolean testQoiFile() {
-    String[] imgToTestListName = { "random", "EPFL", "dice", "cube", "beach" };
-
+  private static boolean testQoiFile(String... imgToTestListName) {
     System.out.println("\nTest the qoiFile with the references images");
 
     for (String imgToTestName : imgToTestListName) {
 
-      Helper.Image testImg = Helper.readImage("../references/" + imgToTestName + ".png");
+      Helper.Image testImg = Helper.readImage("references/" + imgToTestName + ".png");
 
       byte[] newImage = QOIEncoder.qoiFile(testImg);
 
       Helper.write(imgToTestName + ".qoi", newImage);
 
-      byte[] expectedData = Helper.read("../references/" + imgToTestName + ".qoi");
-      byte[] expectedResultQoi = Helper.read("../res/" + imgToTestName + ".qoi");
+      byte[] expectedData = Helper.read("references/" + imgToTestName + ".qoi");
+      byte[] expectedResultQoi = Helper.read("res/" + imgToTestName + ".qoi");
 
       if (!ArrayUtils.equals(expectedData, expectedResultQoi)) {
         System.out.println(imgToTestName + " ERROR");
@@ -338,7 +333,6 @@ public final class Main {
   // =========================================
   // ============================================================================================
 
-  @SuppressWarnings("unused")
   private static boolean testDecodeHeader() {
     byte[] header = { 'q', 'o', 'i', 'f', 0, 0, 0, 64, 0, 0, 0, 32, 3, 0 };
     int[] decoded = QOIDecoder.decodeHeader(header);
@@ -346,7 +340,6 @@ public final class Main {
     return Arrays.equals(decoded, expected);
   }
 
-  @SuppressWarnings("unused")
   private static boolean testDecodeQoiOpRGB() {
     byte[][] buffer = new byte[2][4]; // buffer = [[0, 0, 0, 0], [0, 0, 0, 0]]
     byte[] input = { 0, 0, 0, -2, 100, 0, 55, 8, 0, 0, 0 };
@@ -358,7 +351,6 @@ public final class Main {
     return Arrays.deepEquals(expected_buffer, buffer) && (returnedValue == 3);
   }
 
-  @SuppressWarnings("unused")
   private static boolean testDecodeQoiOpRGBA() {
     byte[][] buffer = new byte[2][4];
     byte[] input = { 0, 0, 0, -2, 100, 0, 55, 8, 0, 0, 0 };
@@ -369,7 +361,6 @@ public final class Main {
     return Arrays.deepEquals(expected_buffer, buffer) && (returnedValue == 4);
   }
 
-  @SuppressWarnings("unused")
   private static boolean testDecodeQoiOpDiff() {
     byte[] previous_pixel = { 23, 117, -4, 7 };
     byte chunk = (byte) 0b01_11_11_11;
@@ -378,7 +369,6 @@ public final class Main {
     return Arrays.equals(currentPixel, expected);
   }
 
-  @SuppressWarnings("unused")
   private static boolean testDecodeQoiOpLuma() {
     byte[] previousPixel = { 23, 117, -4, 7 };
     byte[] chunk = { (byte) 0b10_10_01_01, (byte) 0b11_00_11_01 };
@@ -387,7 +377,6 @@ public final class Main {
     return Arrays.equals(expected, currentPixel);
   }
 
-  @SuppressWarnings("unused")
   private static boolean testDecodeQoiOpRun() {
     byte[][] buffer = new byte[6][4]; // Array is full of zeros
     byte[] pixel = { 1, 2, 3, 4 };
@@ -399,7 +388,6 @@ public final class Main {
     return Arrays.deepEquals(expectedBuffer, buffer) && (returnedValue == 3);
   }
 
-  @SuppressWarnings("unused")
   private static boolean testDecodeData() {
     byte[] encoding = { -62, 102, -115, -103, -76, 102, -2, 100, 100, 100, -1, 90, 90, 90, 90 };
     byte[][] expected = { { 0, 0, 0, -1 }, { 0, 0, 0, -1 }, { 0, 0, 0, -1 }, { 0, -1, 0, -1 }, { -18, -20, -18, -1 },
@@ -409,15 +397,13 @@ public final class Main {
     return Arrays.deepEquals(expected, result);
   }
 
-  private static boolean testDecodeQoiFile() {
-    String[] imgToTestListName = { "cube", "random", "EPFL", "qoi_encode_test", "dice", "beach" };
-
+  private static boolean testDecodeQoiFile(String... imgToTestListName) {
     System.out.println("\nTest decodeQoiFile");
 
     for (String imgToTestName : imgToTestListName) {
-      byte[] testQoi = Helper.read("../references/" + imgToTestName + ".qoi");
+      byte[] testQoi = Helper.read("references/" + imgToTestName + ".qoi");
 
-      Helper.Image expectedImage = Helper.readImage("../references/" + imgToTestName + ".png");
+      Helper.Image expectedImage = Helper.readImage("references/" + imgToTestName + ".png");
 
       Helper.Image decodedImage = QOIDecoder.decodeQoiFile(testQoi);
 

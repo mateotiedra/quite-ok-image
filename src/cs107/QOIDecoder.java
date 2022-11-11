@@ -2,9 +2,6 @@ package cs107;
 
 import static cs107.Helper.Image;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 /**
  * "Quite Ok Image" Decoder
  * 

@@ -308,9 +308,11 @@ public final class ArrayUtils {
    * @param input (int[]) - The table to sum
    * @return (int) - Sum
    * 
-   * @throws AssertionError if the table is null of if the
+   * @throws AssertionError if the table is null
    */
   public static int sumOf(int[] input) {
+    assert input != null;
+
     int sum = 0;
     for (int i : input) {
       sum += i;

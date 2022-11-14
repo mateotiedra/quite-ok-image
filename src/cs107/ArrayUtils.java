@@ -67,11 +67,11 @@ public final class ArrayUtils {
   }
 
   /**
-   * Check if the content of both arrays is the same
+   * Check if the content of both images are the same
    * 
-   * @param a1 (byte[][]) - First array
-   * @param a2 (byte[][]) - Second array
-   * @return (boolean) - true if both arrays have the same content (or both null),
+   * @param a1 (Helper.Image) - First array
+   * @param a2 (Helper.Image) - Second array
+   * @return (boolean) - true if both images have the same content (or both null),
    *         false otherwise
    * @throws AssertionError if one of the parameters is null
    */

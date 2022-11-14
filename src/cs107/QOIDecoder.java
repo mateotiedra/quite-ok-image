@@ -61,7 +61,6 @@ public final class QOIDecoder {
      * @param chunk (byte) - A data chunk
      * @param tag   (byte) - A tag to check
      * @return (boolean) - Whether the chunk has the right tag
-     * @throws AssertionError If the chunk or the tag is null
      */
     public static boolean hasTag(byte chunk, byte tag) {
         byte chunkTag = (byte) (chunk & 0b11000000);
